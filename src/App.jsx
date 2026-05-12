@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import ProductList from './components/ProductList';
-import CategoryFilter from './components/CategoryFilter';
 import Cart from './components/Cart';
 
 const App = () => {
-  // 1. STATE MANAGEMENT
+  // 1. STATE
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [items, setItems] = useState([]);
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // 2. DATA FETCHING (The Forge Standard: Localhost:3000)
+  // 2. FETCH (Moringa Mod 3 Standard)
   useEffect(() => {
     fetch("http://localhost:3000/items")
       .then((res) => res.json())
-      .then((data) => setItems(data));
+      .then((data) => setItems(data))
+      .catch(err => console.error("Forge Data Error:", err));
   }, []);
 
-  // 3. DERIVED STATE (No redundant states for filtering)
+  // 3. DERIVED STATE (Filtering logic)
   const itemsToDisplay = items.filter((item) => {
     if (selectedCategory === "All") return true;
     return item.category === selectedCategory;
@@ -25,12 +25,9 @@ const App = () => {
 
   // 4. HANDLERS
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
-
+  
   const addToCart = (item) => {
-    // Ensuring we don't add duplicates if logic requires unique items
-    if (!cart.find((cartItem) => cartItem.id === item.id)) {
-      setCart([...cart, item]);
-    }
+    setCart([...cart, item]);
   };
 
   return (
@@ -42,16 +39,23 @@ const App = () => {
         </button>
       </header>
 
-      <CategoryFilter 
-        selectedCategory={selectedCategory} 
-        onCategoryChange={setSelectedCategory} 
-      />
+      {/* Inline Category Filter to resolve the missing file error */}
+      <section className="filter-section">
+        <label htmlFor="category-filter">Filter by Category: </label>
+        <select 
+          id="category-filter" 
+          value={selectedCategory} 
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="All">All</option>
+          <option value="Produce">Produce</option>
+          <option value="Dairy">Dairy</option>
+          <option value="Dessert">Dessert</option>
+        </select>
+      </section>
 
       <main>
-        <ProductList 
-          items={itemsToDisplay} 
-          onAddToCart={addToCart} 
-        />
+        <ProductList items={itemsToDisplay} onAddToCart={addToCart} />
         <Cart cartItems={cart} />
       </main>
     </div>
